@@ -9,7 +9,7 @@ require "socket" # for Socket.gethostname
 #
 # Periodically scan an IMAP folder (`INBOX` by default) and move any read messages
 # to the trash.
-class LogStash::Inputs::IMAPRAWRAW < LogStash::Inputs::Base
+class LogStash::Inputs::IMAPRAW < LogStash::Inputs::Base
   config_name "imap"
 
   default :codec, "plain"
@@ -115,11 +115,11 @@ class LogStash::Inputs::IMAPRAWRAW < LogStash::Inputs::Base
         next unless item.attr.has_key?("BODY[]")
         mail = Mail.read_from_string(item.attr["BODY[]"])
         if @strip_attachments
-          queue << parse_mail(mail.without_attachments!)
+          queue << parse_mail(mail.without_attachments!, nil)
         elsif @save_full_message
           queue << parse_mail(mail,item.attr["BODY[]"])
         else
-          queue << parse_mail(mail)
+          queue << parse_mail(mail, nil)
         end
         # Mark message as processed
         @uid_last_value = item.attr["UID"]
