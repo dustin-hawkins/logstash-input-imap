@@ -30,6 +30,7 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
   config :expunge, :validate => :boolean, :default => false
   config :strip_attachments, :validate => :boolean, :default => false
   config :save_attachments, :validate => :boolean, :default => false
+  config :save_full_message, :validate => :boolean, :default => false
 
   # For multipart messages, use the first part that has this
   # content-type as the event message.
@@ -115,6 +116,8 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
         mail = Mail.read_from_string(item.attr["BODY[]"])
         if @strip_attachments
           queue << parse_mail(mail.without_attachments!)
+        elsif @save_full_message
+          queue << parse_mail(mail,item.attr["BODY[]"])
         else
           queue << parse_mail(mail)
         end
@@ -162,12 +165,14 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
     return attachments
   end
 
-  def parse_mail(mail)
+  def parse_mail(mail, raw:nil)
     # Add a debug message so we can track what message might cause an error later
     @logger.debug? && @logger.debug("Working with message_id", :message_id => mail.message_id)
     # TODO(sissel): What should a multipart message look like as an event?
     # For now, just take the plain-text part and set it as the message.
-    if mail.parts.count == 0
+    if @save_full_message
+      message = mail.body
+    elsif mail.parts.count == 0
       # No multipart message, just use the body as the event text
       message = mail.body.decoded
     else
@@ -212,6 +217,11 @@ class LogStash::Inputs::IMAP < LogStash::Inputs::Base
       # Add attachments
       if attachments && attachments.length > 0
         event.set('attachments', attachments)
+      end
+
+      #Add Raw Body if configured
+      if raw && @save_full_message
+        event.set('raw_message_body',raw)
       end
 
       decorate(event)
