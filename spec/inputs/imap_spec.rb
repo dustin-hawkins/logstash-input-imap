@@ -8,7 +8,7 @@ require "net/imap"
 require "base64"
 
 
-describe LogStash::Inputs::IMAP do
+describe LogStash::Inputs::IMAPRAW do
 
   context "when interrupting the plugin" do
     it_behaves_like "an interruptible input plugin" do
@@ -36,7 +36,7 @@ describe LogStash::Inputs::IMAP do
 
 end
 
-describe LogStash::Inputs::IMAP do
+describe LogStash::Inputs::IMAPRAW do
   user = "logstash"
   password = "secret"
   msg_time = Time.new
@@ -64,7 +64,7 @@ describe LogStash::Inputs::IMAP do
         config = {"type" => "imap", "host" => "localhost",
                   "user" => "#{user}", "password" => "#{password}"}
 
-        input = LogStash::Inputs::IMAP.new config
+        input = LogStash::Inputs::IMAPRAW.new config
         input.register
         event = input.parse_mail(subject)
         insist { event.get("message") } == msg_text
@@ -77,7 +77,7 @@ describe LogStash::Inputs::IMAP do
                   "user" => "#{user}", "password" => "#{password}",
                   "content_type" => "text/html"}
 
-        input = LogStash::Inputs::IMAP.new config
+        input = LogStash::Inputs::IMAPRAW.new config
         input.register
         event = input.parse_mail(subject)
         insist { event.get("message") } == msg_html
@@ -91,7 +91,7 @@ describe LogStash::Inputs::IMAP do
       config = {"type" => "imap", "host" => "localhost",
                 "user" => "#{user}", "password" => "#{password}"}
 
-      input = LogStash::Inputs::IMAP.new config
+      input = LogStash::Inputs::IMAPRAW.new config
       input.register
       event = input.parse_mail(subject)
       insist { event.get("subject") } == "foo : bar"
@@ -106,7 +106,7 @@ describe LogStash::Inputs::IMAP do
       config = {"type" => "imap", "host" => "localhost",
                 "user" => "#{user}", "password" => "#{password}"}
 
-      input = LogStash::Inputs::IMAP.new config
+      input = LogStash::Inputs::IMAPRAW.new config
       input.register
       event = input.parse_mail(subject)
       insist { event.get("received") } == ["test1", "test2"]
@@ -120,7 +120,7 @@ describe LogStash::Inputs::IMAP do
       config = {"type" => "imap", "host" => "localhost",
                 "user" => "#{user}", "password" => "#{password}"}
 
-      input = LogStash::Inputs::IMAP.new config
+      input = LogStash::Inputs::IMAPRAW.new config
       input.register
       event = input.parse_mail(subject)
       insist { event.get("received") } == ["test1", "test2", "test3"]
@@ -133,7 +133,7 @@ describe LogStash::Inputs::IMAP do
       config = {"type" => "imap", "host" => "localhost",
                 "user" => "#{user}", "password" => "#{password}"}
 
-      input = LogStash::Inputs::IMAP.new config
+      input = LogStash::Inputs::IMAPRAW.new config
       input.register
       event = input.parse_mail(subject)
       insist { event.get("message") } == msg_text
@@ -145,7 +145,7 @@ describe LogStash::Inputs::IMAP do
       config = {"type" => "imap", "host" => "localhost",
                 "user" => "#{user}", "password" => "#{password}"}
 
-      input = LogStash::Inputs::IMAP.new config
+      input = LogStash::Inputs::IMAPRAW.new config
       input.register
       event = input.parse_mail(subject)
       insist { event.get("attachments") } == [
@@ -160,7 +160,7 @@ describe LogStash::Inputs::IMAP do
         "user" => "#{user}", "password" => "#{password}",
         "save_attachments" => true}
 
-      input = LogStash::Inputs::IMAP.new config
+      input = LogStash::Inputs::IMAPRAW.new config
       input.register
       event = input.parse_mail(subject)
       insist { event.get("attachments") } == [
